@@ -1,0 +1,9 @@
+{
+  "name": "remote-desktop",
+  "version": "1.0.0",
+  "description": "Remote Desktop with WebRTC",
+  "main": "server.js",
+  "dependencies": {
+    "ws": "^8.13.0"
+  }
+}

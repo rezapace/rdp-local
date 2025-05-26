@@ -1,0 +1,2002 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Remote Desktop Pro - Enhanced Version</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+/* Reset and Variables */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --primary: #4a90e2;
+    --secondary: #5cb85c;
+    --danger: #d9534f;
+    --warning: #f0ad4e;
+    --dark: #1a1a1a;
+    --dark-secondary: #2d2d2d;
+    --dark-tertiary: #404040;
+    --text: #ffffff;
+    --text-muted: #b0b0b0;
+    --border: #555555;
+    --shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Base Styles */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--dark);
+    color: var(--text);
+    overflow: hidden;
+    height: 100vh;
+    position: relative;
+}
+
+/* Layout Structure */
+.app-container {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    height: 100vh;
+    position: relative;
+}
+
+/* Header */
+.header {
+    background: var(--dark-secondary);
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    z-index: 100;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.connection-status {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: var(--dark-tertiary);
+    border-radius: 20px;
+    font-size: 0.875rem;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--danger);
+    transition: var(--transition);
+}
+
+.status-dot.connected {
+    background: var(--secondary);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* Main Content */
+.main-content {
+    position: relative;
+    display: flex;
+    overflow: hidden;
+}
+
+/* Role Selection */
+.role-selection {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, var(--dark) 0%, var(--dark-secondary) 100%);
+    z-index: 50;
+    transition: var(--transition);
+}
+
+.role-selection.hidden {
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(0.9);
+}
+
+.role-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    max-width: 800px;
+    padding: 2rem;
+}
+
+.role-card {
+    background: var(--dark-secondary);
+    border: 2px solid transparent;
+    border-radius: 16px;
+    padding: 3rem 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+}
+
+.role-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, var(--primary) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.role-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--primary);
+    box-shadow: var(--shadow);
+}
+
+.role-card:hover::before {
+    opacity: 0.1;
+}
+
+.role-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    display: block;
+}
+
+.role-title {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.role-description {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+}
+
+/* Workspace */
+.workspace {
+    flex: 1;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    position: relative;
+}
+
+/* Sidebar */
+.sidebar {
+    background: var(--dark-secondary);
+    width: 320px;
+    overflow-y: auto;
+    transition: var(--transition);
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
+}
+
+.sidebar.collapsed {
+    width: 0;
+    overflow: hidden;
+}
+
+.sidebar-content {
+    padding: 1.5rem;
+}
+
+.panel {
+    background: var(--dark-tertiary);
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+}
+
+.panel-header {
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+}
+
+.panel-header h3 {
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.panel-body {
+    padding: 1rem;
+    max-height: 400px;
+    overflow-y: auto;
+    transition: max-height 0.3s;
+}
+
+.panel.collapsed .panel-body {
+    max-height: 0;
+    padding: 0;
+}
+
+/* Video Area */
+.video-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    background: #000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.video-container {
+    flex: 1;
+    position: relative;
+    overflow: auto;
+    width: 100%;
+    height: 100%;
+}
+
+.video-wrapper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#remoteVideo {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+}
+
+.video-container.fullscreen {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+}
+
+.video-container.fullscreen #remoteVideo {
+    width: 100%;
+    height: 100%;
+}
+
+#controlCanvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    z-index: 10;
+}
+
+.control-enabled #controlCanvas {
+    pointer-events: auto;
+    cursor: crosshair;
+}
+
+/* Local Video PiP */
+.local-video-pip {
+    position: absolute;
+    bottom: 1rem;
+    right: 1rem;
+    width: 240px;
+    height: 135px;
+    background: #000;
+    border: 2px solid var(--primary);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    transition: var(--transition);
+    z-index: 20;
+}
+
+.local-video-pip.hidden {
+    transform: scale(0.8);
+    opacity: 0;
+    pointer-events: none;
+}
+
+#localVideo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Video Controls */
+.video-controls {
+    position: absolute;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    transition: var(--transition);
+    z-index: 30;
+}
+
+.video-controls.hidden {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(-50%) translateY(20px);
+}
+
+.control-btn {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: 8px;
+    color: var(--text);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.control-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+}
+
+.control-btn:active {
+    transform: scale(0.95);
+}
+
+.control-btn.active {
+    background: var(--primary);
+}
+
+/* Form Elements */
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.75rem;
+    background: var(--dark);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    transition: var(--transition);
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
+}
+
+.checkbox-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.checkbox-group input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+/* Buttons */
+.btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: white;
+}
+
+.btn-secondary {
+    background: var(--dark-tertiary);
+    color: var(--text);
+}
+
+.btn-danger {
+    background: var(--danger);
+    color: white;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn-group {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.btn-block {
+    width: 100%;
+    justify-content: center;
+}
+
+/* Stats Display */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+}
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+    font-size: 0.875rem;
+}
+
+.stat-label {
+    color: var(--text-muted);
+}
+
+.stat-value {
+    font-weight: 600;
+    font-family: monospace;
+}
+
+/* Notifications */
+.notifications {
+    position: fixed;
+    top: 5rem;
+    right: 2rem;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.notification {
+    padding: 1rem 1.5rem;
+    background: var(--dark-secondary);
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    min-width: 300px;
+    animation: slideIn 0.3s ease-out;
+    position: relative;
+    overflow: hidden;
+}
+
+.notification::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: var(--primary);
+}
+
+.notification.success::before { background: var(--secondary); }
+.notification.error::before { background: var(--danger); }
+.notification.warning::before { background: var(--warning); }
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Loading Overlay */
+.loading-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 40;
+    backdrop-filter: blur(5px);
+    transition: var(--transition);
+}
+
+.loading-overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.loading-spinner {
+    width: 60px;
+    height: 60px;
+    border: 4px solid rgba(255, 255, 255, 0.1);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.loading-text {
+    position: absolute;
+    margin-top: 100px;
+    font-size: 1.125rem;
+}
+
+/* Debug Console */
+.debug-panel {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 300px;
+    background: var(--dark-secondary);
+    border-top: 1px solid var(--border);
+    transform: translateY(100%);
+    transition: var(--transition);
+    z-index: 90;
+}
+
+.debug-panel.visible {
+    transform: translateY(0);
+}
+
+.debug-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: var(--dark-tertiary);
+}
+
+.debug-content {
+    height: calc(100% - 60px);
+    overflow-y: auto;
+    padding: 1rem;
+    font-family: monospace;
+    font-size: 0.875rem;
+}
+
+.log-entry {
+    margin-bottom: 0.5rem;
+    padding: 0.25rem 0;
+}
+
+.log-entry.info { color: var(--text-muted); }
+.log-entry.warn { color: var(--warning); }
+.log-entry.error { color: var(--danger); }
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .sidebar {
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        z-index: 60;
+    }
+    
+    .sidebar.collapsed {
+        transform: translateX(-100%);
+    }
+}
+
+@media (max-width: 768px) {
+    .role-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .video-controls {
+        bottom: 1rem;
+        padding: 0.75rem;
+    }
+    
+    .local-video-pip {
+        width: 120px;
+        height: 68px;
+    }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--dark-tertiary);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #666;
+}
+
+/* Add this CSS to the style section */
+.header-controls {
+    display: flex;
+    gap: 0.5rem;
+    margin-left: 1rem;
+}
+
+.header-control-btn {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: 8px;
+    color: var(--text);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.header-control-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+}
+
+.header-control-btn:active {
+    transform: scale(0.95);
+}
+
+.header-control-btn.active {
+    background: var(--primary);
+}
+
+@media (max-width: 768px) {
+    .header {
+        flex-direction: column;
+        gap: 0.5rem;
+        padding: 0.5rem;
+    }
+    
+    .header-left {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    .header-controls {
+        margin-left: 0;
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+}
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <div class="logo">
+                    <i class="fas fa-desktop"></i>
+                    <span>Remote Desktop Pro</span>
+                </div>
+                <div class="connection-status">
+                    <span class="status-dot" id="statusDot"></span>
+                    <span id="statusText">Disconnected</span>
+                </div>
+            </div>
+            <div class="header-controls">
+                <button class="header-control-btn" id="headerFullscreenBtn" title="Fullscreen">
+                    <i class="fas fa-expand"></i>
+                </button>
+                <button class="header-control-btn" id="headerPipBtn" title="Picture in Picture">
+                    <i class="fas fa-external-link-square-alt"></i>
+                </button>
+                <button class="header-control-btn" id="headerScreenshotBtn" title="Screenshot">
+                    <i class="fas fa-camera"></i>
+                </button>
+                <button class="header-control-btn" id="headerRecordBtn" title="Record">
+                    <i class="fas fa-record-vinyl"></i>
+                </button>
+                <button class="header-control-btn" id="headerToggleControlBtn" title="Toggle Control">
+                    <i class="fas fa-mouse-pointer"></i>
+                </button>
+                <button class="header-control-btn" id="headerToggleSidebarBtn" title="Toggle Sidebar">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Role Selection -->
+            <div class="role-selection" id="roleSelection">
+                <div class="role-grid">
+                    <div class="role-card" data-role="host">
+                        <i class="role-icon fas fa-broadcast-tower"></i>
+                        <h2 class="role-title">Host</h2>
+                        <p class="role-description">Share your screen and allow remote control</p>
+                    </div>
+                    <div class="role-card" data-role="client">
+                        <i class="role-icon fas fa-eye"></i>
+                        <h2 class="role-title">Viewer</h2>
+                        <p class="role-description">Connect to and control a remote screen</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Workspace -->
+            <div class="workspace">
+                <!-- Left Sidebar -->
+                <aside class="sidebar" id="leftSidebar">
+                    <div class="sidebar-content">
+                        <!-- Host Panel -->
+                        <div class="panel" id="hostPanel" style="display: none;">
+                            <div class="panel-header" onclick="togglePanel('hostPanel')">
+                                <h3>Host Settings</h3>
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
+                            <div class="panel-body">
+                                <div class="form-group">
+                                    <label class="form-label">Session ID</label>
+                                    <input type="text" class="form-control" id="sessionId" readonly>
+                                </div>
+                                <div class="form-group">
+                                    <div class="checkbox-group">
+                                        <input type="checkbox" id="captureAudio">
+                                        <label for="captureAudio">Include Audio</label>
+                                    </div>
+                                    <div class="checkbox-group">
+                                        <input type="checkbox" id="showCursor" checked>
+                                        <label for="showCursor">Show Mouse Cursor</label>
+                                    </div>
+                                </div>
+                                <div class="btn-group">
+                                    <button class="btn btn-primary btn-block" id="startShareBtn">
+                                        <i class="fas fa-play"></i> Start Sharing
+                                    </button>
+                                    <button class="btn btn-danger btn-block" id="stopShareBtn" disabled>
+                                        <i class="fas fa-stop"></i> Stop
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Client Panel -->
+                        <div class="panel" id="clientPanel" style="display: none;">
+                            <div class="panel-header" onclick="togglePanel('clientPanel')">
+                                <h3>Viewer Settings</h3>
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
+                            <div class="panel-body">
+                                <div class="form-group">
+                                    <label class="form-label">Host ID</label>
+                                    <input type="text" class="form-control" id="hostIdInput" placeholder="Enter host session ID">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Quality</label>
+                                    <select class="form-control" id="qualitySelect">
+                                        <option value="auto">Auto</option>
+                                        <option value="high">High (1080p)</option>
+                                        <option value="medium">Medium (720p)</option>
+                                        <option value="low">Low (480p)</option>
+                                    </select>
+                                </div>
+                                <button class="btn btn-primary btn-block" id="connectBtn">
+                                    <i class="fas fa-link"></i> Connect
+                                </button>
+                                <button class="btn btn-secondary btn-block" id="enableControlBtn" disabled>
+                                    <i class="fas fa-gamepad"></i> Enable Control
+                                </button>
+                                
+                                <!-- New keyboard and mouse control instructions -->
+                                <div class="form-group" style="margin-top:15px; border-top:1px solid #555; padding-top:15px;">
+                                    <label class="form-label">Control Instructions:</label>
+                                    <ul style="padding-left: 20px; font-size: 0.85rem; color: #b0b0b0;">
+                                        <li>Click <strong>Enable Control</strong> to control remote machine</li>
+                                        <li>Click the video area to focus keyboard input</li>
+                                        <li>Type on your keyboard to send keystrokes</li>
+                                        <li>Use two fingers on touchpad to scroll</li>
+                                        <li>Right-click works as expected</li>
+                                        <li>Mouse movement is tracked relative to video area</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Stats Panel -->
+                        <div class="panel collapsed" id="statsPanel">
+                            <div class="panel-header" onclick="togglePanel('statsPanel')">
+                                <h3>Connection Stats</h3>
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
+                            <div class="panel-body">
+                                <div class="stats-grid" id="statsGrid">
+                                    <div class="stat-item">
+                                        <span class="stat-label">FPS</span>
+                                        <span class="stat-value" id="statFps">-</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <span class="stat-label">Bitrate</span>
+                                        <span class="stat-value" id="statBitrate">-</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <span class="stat-label">RTT</span>
+                                        <span class="stat-value" id="statRtt">-</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <span class="stat-label">Resolution</span>
+                                        <span class="stat-value" id="statResolution">-</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- Video Area -->
+                <div class="video-area">
+                    <div class="video-container" id="videoContainer">
+                        <div class="video-wrapper">
+                            <video id="remoteVideo" autoplay playsinline muted></video>
+                            <canvas id="controlCanvas" tabindex="0"></canvas>
+                        </div>
+                        
+                        <!-- Local Video PiP -->
+                        <div class="local-video-pip hidden" id="localVideoPip">
+                            <video id="localVideo" autoplay playsinline muted></video>
+                        </div>
+
+                        <!-- Video Controls -->
+                        <div class="video-controls hidden" id="videoControls">
+                            <button class="control-btn" id="fullscreenBtn" title="Fullscreen">
+                                <i class="fas fa-expand"></i>
+                            </button>
+                            <button class="control-btn" id="pipBtn" title="Picture in Picture">
+                                <i class="fas fa-external-link-square-alt"></i>
+                            </button>
+                            <button class="control-btn" id="screenshotBtn" title="Screenshot">
+                                <i class="fas fa-camera"></i>
+                            </button>
+                            <button class="control-btn" id="recordBtn" title="Record">
+                                <i class="fas fa-record-vinyl"></i>
+                            </button>
+                            <button class="control-btn" id="toggleControlBtn" title="Toggle Control">
+                                <i class="fas fa-mouse-pointer"></i>
+                            </button>
+                            <button class="control-btn" id="toggleSidebarBtn" title="Toggle Sidebar">
+                                <i class="fas fa-bars"></i>
+                            </button>
+                        </div>
+
+                        <!-- Loading Overlay -->
+                        <div class="loading-overlay" id="loadingOverlay">
+                            <div class="loading-spinner"></div>
+                            <div class="loading-text">Connecting...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Notifications Container -->
+    <div class="notifications" id="notifications"></div>
+
+    <!-- Debug Panel -->
+    <div class="debug-panel" id="debugPanel">
+        <div class="debug-header">
+            <h3>Debug Console</h3>
+            <div>
+                <button class="btn btn-secondary" onclick="clearDebugLog()">Clear</button>
+                <button class="btn btn-secondary" onclick="toggleDebugPanel()">Close</button>
+            </div>
+        </div>
+        <div class="debug-content" id="debugContent"></div>
+    </div>
+
+    <script>
+// Enhanced Remote Desktop Application
+class RemoteDesktopApp {
+    constructor() {
+        this.state = {
+            role: null,
+            connected: false,
+            streaming: false,
+            controlling: false,
+            recording: false,
+            fullscreen: false
+        };
+        
+        this.connection = {
+            ws: null,
+            pc: null,
+            localStream: null,
+            remoteStream: null,
+            dataChannel: null
+        };
+        
+        this.config = {
+            wsUrl: `ws://${window.location.hostname}:${window.location.port || '80'}`,
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' }
+            ],
+            constraints: {
+                video: {
+                    width: { ideal: 1920 },
+                    height: { ideal: 1080 },
+                    frameRate: { ideal: 30 }
+                },
+                audio: false
+            }
+        };
+        
+        this.stats = {
+            interval: null,
+            lastBytes: 0,
+            lastTimestamp: 0
+        };
+        
+        this.isConnecting = false;
+        
+        this.init();
+    }
+    
+    init() {
+        this.setupEventListeners();
+        this.setupKeyboardShortcuts();
+        this.log('Application initialized', 'info');
+    }
+    
+    setupEventListeners() {
+        // Role selection
+        document.querySelectorAll('.role-card').forEach(card => {
+            card.addEventListener('click', () => this.selectRole(card.dataset.role));
+        });
+        
+        // Host controls
+        document.getElementById('startShareBtn')?.addEventListener('click', () => this.startScreenShare());
+        document.getElementById('stopShareBtn')?.addEventListener('click', () => this.stopScreenShare());
+        
+        // Client controls
+        document.getElementById('connectBtn')?.addEventListener('click', () => this.connect());
+        document.getElementById('enableControlBtn')?.addEventListener('click', () => this.toggleControl());
+        
+        // Video controls
+        document.getElementById('fullscreenBtn')?.addEventListener('click', () => this.toggleFullscreen());
+        document.getElementById('pipBtn')?.addEventListener('click', () => this.togglePiP());
+        document.getElementById('screenshotBtn')?.addEventListener('click', () => this.takeScreenshot());
+        document.getElementById('recordBtn')?.addEventListener('click', () => this.toggleRecording());
+        document.getElementById('toggleControlBtn')?.addEventListener('click', () => this.toggleControl());
+        document.getElementById('toggleSidebarBtn')?.addEventListener('click', () => this.toggleSidebar());
+        
+        // Canvas events for remote control
+        const canvas = document.getElementById('controlCanvas');
+        if (canvas) {
+            canvas.addEventListener('mousemove', (e) => this.handleMouseMove(e));
+            canvas.addEventListener('mousedown', (e) => this.handleMouseDown(e));
+            canvas.addEventListener('mouseup', (e) => this.handleMouseUp(e));
+            canvas.addEventListener('wheel', (e) => this.handleWheel(e), { passive: false });
+            canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+            canvas.addEventListener('touchstart', (e) => this.handleTouchStart(e), { passive: false });
+            canvas.addEventListener('touchmove', (e) => this.handleTouchMove(e), { passive: false });
+            canvas.addEventListener('touchend', (e) => this.handleTouchEnd(e));
+            
+            // Add keyboard event listeners
+            canvas.setAttribute('tabindex', '0');
+            canvas.addEventListener('keydown', (e) => this.handleKeyEvent(e, 'keydown'));
+            canvas.addEventListener('keyup', (e) => this.handleKeyEvent(e, 'keyup'));
+            canvas.addEventListener('blur', () => {
+                // Handle releasing keys when focus is lost
+                if (this.state.controlling) {
+                    this.log('Canvas lost focus - releasing keys', 'info');
+                }
+            });
+        }
+        
+        // Video events
+        const remoteVideo = document.getElementById('remoteVideo');
+        if (remoteVideo) {
+            remoteVideo.addEventListener('loadedmetadata', () => this.handleVideoLoaded());
+        }
+        
+        // Window resize event for canvas sizing
+        window.addEventListener('resize', () => this.resizeCanvas());
+        
+        // Fullscreen events
+        document.addEventListener('fullscreenchange', () => this.handleFullscreenChange());
+        
+        // Header control buttons
+        document.getElementById('headerFullscreenBtn')?.addEventListener('click', () => this.toggleFullscreen());
+        document.getElementById('headerPipBtn')?.addEventListener('click', () => this.togglePiP());
+        document.getElementById('headerScreenshotBtn')?.addEventListener('click', () => this.takeScreenshot());
+        document.getElementById('headerRecordBtn')?.addEventListener('click', () => this.toggleRecording());
+        document.getElementById('headerToggleControlBtn')?.addEventListener('click', () => this.toggleControl());
+        document.getElementById('headerToggleSidebarBtn')?.addEventListener('click', () => this.toggleSidebar());
+    }
+    
+    setupKeyboardShortcuts() {
+        document.addEventListener('keydown', (e) => {
+            // F11 - Fullscreen
+            if (e.key === 'F11') {
+                e.preventDefault();
+                this.toggleFullscreen();
+            }
+            // Ctrl+D - Debug
+            if (e.ctrlKey && e.key === 'd') {
+                e.preventDefault();
+                this.toggleDebugPanel();
+            }
+            // Ctrl+S - Screenshot
+            if (e.ctrlKey && e.key === 's' && this.state.streaming) {
+                e.preventDefault();
+                this.takeScreenshot();
+            }
+        });
+    }
+    
+    selectRole(role) {
+        this.state.role = role;
+        document.getElementById('roleSelection').classList.add('hidden');
+        
+        if (role === 'host') {
+            document.getElementById('hostPanel').style.display = 'block';
+        } else {
+            document.getElementById('clientPanel').style.display = 'block';
+        }
+        
+        this.connectWebSocket();
+        this.showNotification(`Selected role: ${role}`, 'info');
+        this.log(`Role selected: ${role}`, 'info');
+    }
+    
+    async connectWebSocket() {
+        try {
+            this.connection.ws = new WebSocket(this.config.wsUrl);
+            
+            this.connection.ws.onopen = () => {
+                this.updateStatus('Connected', true);
+                this.sendMessage({ type: 'register', role: this.state.role });
+            };
+            
+            this.connection.ws.onmessage = (event) => this.handleWebSocketMessage(event);
+            this.connection.ws.onclose = () => this.handleWebSocketClose();
+            this.connection.ws.onerror = (error) => this.handleWebSocketError(error);
+            
+        } catch (error) {
+            this.log(`WebSocket connection failed: ${error}`, 'error');
+            this.showNotification('Connection failed', 'error');
+        }
+    }
+    
+    handleWebSocketMessage(event) {
+        const data = JSON.parse(event.data);
+        this.log(`Received: ${data.type}`, 'info');
+        
+        switch (data.type) {
+            case 'registered':
+                this.handleRegistered(data);
+                break;
+            case 'offer':
+                this.handleOffer(data);
+                break;
+            case 'answer':
+                this.handleAnswer(data);
+                break;
+            case 'ice-candidate':
+                this.handleIceCandidate(data);
+                break;
+            case 'host-ready':
+                this.handleHostReady(data);
+                break;
+            case 'host-available':
+                this.handleHostAvailable(data);
+                break;
+            case 'client-joined':
+                this.handleClientJoined(data);
+                break;
+            case 'control-event':
+                this.handleControlEvent(data);
+                break;
+            case 'error':
+                this.handleError(data);
+                break;
+        }
+    }
+    
+    handleWebSocketClose() {
+        this.updateStatus('Disconnected', false);
+        this.log('WebSocket disconnected', 'warn');
+        setTimeout(() => this.connectWebSocket(), 3000);
+    }
+    
+    handleWebSocketError(error) {
+        this.log(`WebSocket error: ${error}`, 'error');
+    }
+    
+    sendMessage(data) {
+        if (this.connection.ws?.readyState === WebSocket.OPEN) {
+            this.connection.ws.send(JSON.stringify(data));
+        }
+    }
+    
+    handleRegistered(data) {
+        if (this.state.role === 'host') {
+            document.getElementById('sessionId').value = data.clientId;
+        }
+        this.log(`Registered with ID: ${data.clientId}`, 'info');
+    }
+    
+    // Screen sharing for host
+    async startScreenShare() {
+        try {
+            this.showLoading(true);
+            
+            const constraints = {
+                video: {
+                    ...this.config.constraints.video,
+                    cursor: document.getElementById('showCursor')?.checked ? 'always' : 'never'
+                },
+                audio: document.getElementById('captureAudio')?.checked
+            };
+            
+            this.connection.localStream = await navigator.mediaDevices.getDisplayMedia(constraints);
+            
+            document.getElementById('localVideo').srcObject = this.connection.localStream;
+            document.getElementById('localVideoPip').classList.remove('hidden');
+            
+            this.connection.localStream.getVideoTracks()[0].onended = () => {
+                this.stopScreenShare();
+            };
+            
+            document.getElementById('startShareBtn').disabled = true;
+            document.getElementById('stopShareBtn').disabled = false;
+            
+            this.state.streaming = true;
+            this.sendMessage({ type: 'host-ready' });
+            
+            this.showLoading(false);
+            this.showNotification('Screen sharing started', 'success');
+            this.setupPeerConnection();
+            
+        } catch (error) {
+            this.showLoading(false);
+            this.log(`Screen share error: ${error}`, 'error');
+            this.showNotification('Failed to start screen share', 'error');
+        }
+    }
+    
+    stopScreenShare() {
+        if (this.connection.localStream) {
+            this.connection.localStream.getTracks().forEach(track => track.stop());
+            this.connection.localStream = null;
+        }
+        
+        document.getElementById('localVideo').srcObject = null;
+        document.getElementById('localVideoPip').classList.add('hidden');
+        
+        document.getElementById('startShareBtn').disabled = false;
+        document.getElementById('stopShareBtn').disabled = true;
+        
+        this.state.streaming = false;
+        this.closePeerConnection();
+        
+        this.sendMessage({ type: 'host-stopped' });
+        this.showNotification('Screen sharing stopped', 'info');
+    }
+    
+    // Client connection
+    async connect() {
+        const hostId = document.getElementById('hostIdInput').value.trim();
+        if (!hostId) {
+            this.showNotification('Please enter a host ID', 'warning');
+            return;
+        }
+        
+        // Prevent multiple connection attempts
+        if (this.isConnecting) return;
+        this.isConnecting = true;
+        
+        this.showLoading(true);
+        this.sendMessage({ type: 'connect-to-host', hostId: hostId });
+    }
+    
+    // WebRTC setup
+    setupPeerConnection() {
+        this.connection.pc = new RTCPeerConnection({
+            iceServers: this.config.iceServers
+        });
+        
+        this.connection.pc.onicecandidate = (event) => {
+            if (event.candidate) {
+                this.sendMessage({
+                    type: 'ice-candidate',
+                    candidate: event.candidate
+                });
+            }
+        };
+        
+        this.connection.pc.ontrack = (event) => {
+            if (event.streams && event.streams[0]) {
+                this.handleRemoteStream(event.streams[0]);
+            }
+        };
+        
+        this.connection.pc.oniceconnectionstatechange = () => {
+            this.log(`ICE state: ${this.connection.pc.iceConnectionState}`, 'info');
+        };
+        
+        // Setup data channel for control
+        if (this.state.role === 'host') {
+            this.connection.dataChannel = this.connection.pc.createDataChannel('control');
+            this.setupDataChannel();
+        } else {
+            this.connection.pc.ondatachannel = (event) => {
+                this.connection.dataChannel = event.channel;
+                this.setupDataChannel();
+            };
+        }
+        
+        // Add local stream if host
+        if (this.state.role === 'host' && this.connection.localStream) {
+            this.connection.localStream.getTracks().forEach(track => {
+                this.connection.pc.addTrack(track, this.connection.localStream);
+            });
+            this.createOffer();
+        }
+    }
+    
+    setupDataChannel() {
+        if (!this.connection.dataChannel) return;
+        
+        this.connection.dataChannel.onopen = () => {
+            this.log('Data channel opened', 'info');
+            document.getElementById('enableControlBtn').disabled = false;
+        };
+        
+        this.connection.dataChannel.onmessage = (event) => {
+            if (this.state.role === 'host') {
+                this.processControlCommand(JSON.parse(event.data));
+            }
+        };
+    }
+    
+    async createOffer() {
+        try {
+            const offer = await this.connection.pc.createOffer();
+            await this.connection.pc.setLocalDescription(offer);
+            
+            this.sendMessage({ 
+                type: 'offer', 
+                offer: offer,
+                targetId: this.connectedPeerId 
+            });
+        } catch (error) {
+            this.log(`Create offer error: ${error}`, 'error');
+        }
+    }
+    
+    async handleOffer(data) {
+        try {
+            this.log(`Received offer from ${data.fromId}`, 'info');
+            this.connectedPeerId = data.fromId;
+            
+            await this.connection.pc.setRemoteDescription(new RTCSessionDescription(data.offer));
+            const answer = await this.connection.pc.createAnswer();
+            await this.connection.pc.setLocalDescription(answer);
+            
+            this.sendMessage({ 
+                type: 'answer', 
+                answer: answer,
+                targetId: data.fromId 
+            });
+            
+            this.showLoading(false);
+        } catch (error) {
+            this.log(`Handle offer error: ${error}`, 'error');
+        }
+    }
+    
+    async handleAnswer(data) {
+        try {
+            await this.connection.pc.setRemoteDescription(new RTCSessionDescription(data.answer));
+        } catch (error) {
+            this.log(`Handle answer error: ${error}`, 'error');
+        }
+    }
+    
+    async handleIceCandidate(data) {
+        try {
+            await this.connection.pc.addIceCandidate(new RTCIceCandidate(data.candidate));
+        } catch (error) {
+            this.log(`Handle ICE candidate error: ${error}`, 'error');
+        }
+    }
+    
+    handleRemoteStream(stream) {
+        this.connection.remoteStream = stream;
+        const remoteVideo = document.getElementById('remoteVideo');
+        remoteVideo.srcObject = stream;
+        remoteVideo.play().catch(err => {
+            this.log(`Error playing video: ${err}`, 'error');
+        });
+        document.getElementById('videoControls').classList.remove('hidden');
+        document.getElementById('enableControlBtn').disabled = false;
+        this.showLoading(false);
+        this.showNotification('Connected to remote screen', 'success');
+        this.isConnecting = false;
+        this.startStatsMonitoring();
+    }
+    
+    handleVideoLoaded() {
+        this.resizeCanvas();
+        this.log('Remote video loaded', 'info');
+    }
+    
+    // Remote control
+    toggleControl() {
+        this.state.controlling = !this.state.controlling;
+        const btn = document.getElementById('enableControlBtn');
+        const toggleBtn = document.getElementById('toggleControlBtn');
+        const headerBtn = document.getElementById('headerToggleControlBtn');
+        const videoContainer = document.getElementById('videoContainer');
+        const controlCanvas = document.getElementById('controlCanvas');
+        
+        if (this.state.controlling) {
+            if (btn) btn.textContent = 'Disable Control';
+            if (btn) btn.classList.add('active');
+            if (toggleBtn) toggleBtn.classList.add('active');
+            if (headerBtn) headerBtn.classList.add('active');
+            if (videoContainer) videoContainer.classList.add('control-active');
+            if (controlCanvas) {
+                controlCanvas.style.pointerEvents = 'auto';
+                controlCanvas.style.cursor = 'crosshair';
+            }
+            
+            // Configure canvas position and size
+            this.resizeCanvas();
+            
+            // Ensure canvas is in front
+            controlCanvas.style.zIndex = '100';
+            
+            // Focus the canvas to capture keyboard events
+            controlCanvas.focus();
+            
+            this.showNotification('Remote control enabled', 'info');
+            this.log('Remote control enabled', 'info');
+        } else {
+            if (btn) btn.textContent = 'Enable Control';
+            if (btn) btn.classList.remove('active');
+            if (toggleBtn) toggleBtn.classList.remove('active');
+            if (headerBtn) headerBtn.classList.remove('active');
+            if (videoContainer) videoContainer.classList.remove('control-active');
+            if (controlCanvas) {
+                controlCanvas.style.pointerEvents = 'none';
+                controlCanvas.style.cursor = 'default';
+            }
+            this.showNotification('Remote control disabled', 'info');
+        }
+    }
+    
+    handleMouseMove(event) {
+        if (!this.state.controlling) return;
+        
+        const rect = event.target.getBoundingClientRect();
+        const canvasX = event.clientX - rect.left;
+        const canvasY = event.clientY - rect.top;
+        
+        // Convert to normalized video coordinates
+        const coords = this.canvasToVideoCoordinates(canvasX, canvasY);
+        
+        // Throttle mouse move events
+        this.throttle(() => {
+            this.sendControlCommand('mousemove', { x: coords.x, y: coords.y });
+        }, 30);
+    }
+    
+    handleMouseDown(event) {
+        if (!this.state.controlling) return;
+        
+        const rect = event.target.getBoundingClientRect();
+        const canvasX = event.clientX - rect.left;
+        const canvasY = event.clientY - rect.top;
+        
+        // Convert to normalized video coordinates
+        const coords = this.canvasToVideoCoordinates(canvasX, canvasY);
+        
+        this.log(`Mouse down at ${coords.x.toFixed(2)}, ${coords.y.toFixed(2)}, button: ${event.button}`, 'info');
+        this.sendControlCommand('mousedown', { x: coords.x, y: coords.y, button: event.button });
+        
+        // Focus canvas to capture keyboard events
+        event.target.focus();
+    }
+    
+    handleMouseUp(event) {
+        if (!this.state.controlling) return;
+        
+        const rect = event.target.getBoundingClientRect();
+        const canvasX = event.clientX - rect.left;
+        const canvasY = event.clientY - rect.top;
+        
+        // Convert to normalized video coordinates
+        const coords = this.canvasToVideoCoordinates(canvasX, canvasY);
+        
+        this.log(`Mouse up at ${coords.x.toFixed(2)}, ${coords.y.toFixed(2)}, button: ${event.button}`, 'info');
+        this.sendControlCommand('mouseup', { x: coords.x, y: coords.y, button: event.button });
+    }
+    
+    handleWheel(event) {
+        if (!this.state.controlling) return;
+        
+        event.preventDefault();
+        const rect = event.target.getBoundingClientRect();
+        const canvasX = event.clientX - rect.left;
+        const canvasY = event.clientY - rect.top;
+        
+        // Convert to normalized video coordinates
+        const coords = this.canvasToVideoCoordinates(canvasX, canvasY);
+        
+        this.sendControlCommand('wheel', { x: coords.x, y: coords.y, deltaY: event.deltaY });
+    }
+    
+    sendControlCommand(type, data) {
+        // Send via WebSocket instead of data channel for more reliability
+        this.sendMessage({
+            type: 'control',
+            action: type,
+            ...data
+        });
+        this.log(`Sent control: ${type}`, 'info');
+    }
+    
+    processControlCommand(command) {
+        // Host processes control commands here
+        this.log(`Control command: ${command.type}`, 'info');
+    }
+    
+    // UI controls
+    toggleFullscreen() {
+        if (!document.fullscreenElement) {
+            document.getElementById('videoContainer').requestFullscreen();
+        } else {
+            document.exitFullscreen();
+        }
+    }
+    
+    handleFullscreenChange() {
+        this.state.fullscreen = !!document.fullscreenElement;
+        const btn = document.getElementById('fullscreenBtn');
+        const headerBtn = document.getElementById('headerFullscreenBtn');
+        
+        if (this.state.fullscreen) {
+            if (btn) btn.innerHTML = '<i class="fas fa-compress"></i>';
+            if (headerBtn) headerBtn.innerHTML = '<i class="fas fa-compress"></i>';
+        } else {
+            if (btn) btn.innerHTML = '<i class="fas fa-expand"></i>';
+            if (headerBtn) headerBtn.innerHTML = '<i class="fas fa-expand"></i>';
+        }
+        
+        this.resizeCanvas();
+    }
+    
+    async togglePiP() {
+        const video = document.getElementById('remoteVideo');
+        
+        try {
+            if (document.pictureInPictureElement) {
+                await document.exitPictureInPicture();
+            } else {
+                await video.requestPictureInPicture();
+            }
+        } catch (error) {
+            this.log(`PiP error: ${error}`, 'error');
+            this.showNotification('Picture-in-Picture not supported', 'error');
+        }
+    }
+    
+    takeScreenshot() {
+        const video = document.getElementById('remoteVideo');
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0);
+        
+        canvas.toBlob(blob => {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `screenshot-${Date.now()}.png`;
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+        
+        this.showNotification('Screenshot saved', 'success');
+    }
+    
+    toggleRecording() {
+        if (!this.state.recording) {
+            this.startRecording();
+        } else {
+            this.stopRecording();
+        }
+    }
+    
+    startRecording() {
+        const stream = document.getElementById('remoteVideo').srcObject;
+        if (!stream) return;
+        
+        const options = { mimeType: 'video/webm;codecs=vp9' };
+        this.mediaRecorder = new MediaRecorder(stream, options);
+        this.recordedChunks = [];
+        
+        this.mediaRecorder.ondataavailable = (event) => {
+            if (event.data.size > 0) {
+                this.recordedChunks.push(event.data);
+            }
+        };
+        
+        this.mediaRecorder.onstop = () => {
+            const blob = new Blob(this.recordedChunks, { type: 'video/webm' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `recording-${Date.now()}.webm`;
+            a.click();
+            URL.revokeObjectURL(url);
+        };
+        
+        this.mediaRecorder.start();
+        this.state.recording = true;
+        
+        const btn = document.getElementById('recordBtn');
+        const headerBtn = document.getElementById('headerRecordBtn');
+        
+        if (btn) btn.classList.add('active');
+        if (headerBtn) headerBtn.classList.add('active');
+        
+        if (btn) btn.innerHTML = '<i class="fas fa-stop"></i>';
+        if (headerBtn) headerBtn.innerHTML = '<i class="fas fa-stop"></i>';
+        
+        this.showNotification('Recording started', 'info');
+    }
+    
+    stopRecording() {
+        if (this.mediaRecorder && this.state.recording) {
+            this.mediaRecorder.stop();
+            this.state.recording = false;
+            
+            const btn = document.getElementById('recordBtn');
+            const headerBtn = document.getElementById('headerRecordBtn');
+            
+            if (btn) btn.classList.remove('active');
+            if (headerBtn) headerBtn.classList.remove('active');
+            
+            if (btn) btn.innerHTML = '<i class="fas fa-record-vinyl"></i>';
+            if (headerBtn) headerBtn.innerHTML = '<i class="fas fa-record-vinyl"></i>';
+            
+            this.showNotification('Recording saved', 'success');
+        }
+    }
+    
+    toggleSidebar() {
+        document.getElementById('leftSidebar').classList.toggle('collapsed');
+    }
+    
+    // Stats monitoring
+    startStatsMonitoring() {
+        this.stats.interval = setInterval(() => this.updateStats(), 1000);
+    }
+    
+    async updateStats() {
+        if (!this.connection.pc) return;
+        
+        const stats = await this.connection.pc.getStats();
+        let videoStats = null;
+        
+        stats.forEach(report => {
+            if (report.type === 'inbound-rtp' && report.mediaType === 'video') {
+                videoStats = report;
+            }
+        });
+        
+        if (videoStats) {
+            const fps = videoStats.framesPerSecond || 0;
+            const bitrate = this.calculateBitrate(videoStats.bytesReceived, videoStats.timestamp);
+            const resolution = `${videoStats.frameWidth || 0}x${videoStats.frameHeight || 0}`;
+            
+            document.getElementById('statFps').textContent = `${fps} fps`;
+            document.getElementById('statBitrate').textContent = `${bitrate} kbps`;
+            document.getElementById('statResolution').textContent = resolution;
+        }
+        
+        // Get RTT
+        stats.forEach(report => {
+            if (report.type === 'candidate-pair' && report.state === 'succeeded') {
+                const rtt = report.currentRoundTripTime ? (report.currentRoundTripTime * 1000).toFixed(0) : '0';
+                document.getElementById('statRtt').textContent = `${rtt} ms`;
+            }
+        });
+    }
+    
+    calculateBitrate(bytes, timestamp) {
+        if (!this.stats.lastBytes) {
+            this.stats.lastBytes = bytes;
+            this.stats.lastTimestamp = timestamp;
+            return 0;
+        }
+        
+        const timeDiff = (timestamp - this.stats.lastTimestamp) / 1000;
+        const bytesDiff = bytes - this.stats.lastBytes;
+        const bitrate = (bytesDiff * 8) / timeDiff / 1000;
+        
+        this.stats.lastBytes = bytes;
+        this.stats.lastTimestamp = timestamp;
+        
+        return bitrate.toFixed(0);
+    }
+    
+    // Utilities
+    resizeCanvas() {
+        const video = document.getElementById('remoteVideo');
+        const canvas = document.getElementById('controlCanvas');
+        
+        if (video && canvas) {
+            const rect = video.getBoundingClientRect();
+            
+            // Store the actual video dimensions and container dimensions
+            this.videoDisplayInfo = {
+                containerWidth: rect.width,
+                containerHeight: rect.height,
+                videoWidth: video.videoWidth,
+                videoHeight: video.videoHeight,
+                offsetX: 0,
+                offsetY: 0,
+                scaleX: 1,
+                scaleY: 1
+            };
+            
+            // Calculate letterboxing/pillarboxing
+            if (video.videoWidth && video.videoHeight) {
+                const containerRatio = rect.width / rect.height;
+                const videoRatio = video.videoWidth / video.videoHeight;
+                
+                if (containerRatio > videoRatio) {
+                    // Letterboxing (black bars on left/right)
+                    const videoDisplayWidth = rect.height * videoRatio;
+                    const offsetX = (rect.width - videoDisplayWidth) / 2;
+                    
+                    this.videoDisplayInfo.offsetX = offsetX;
+                    this.videoDisplayInfo.scaleX = videoDisplayWidth / rect.width;
+                } else {
+                    // Pillarboxing (black bars on top/bottom)
+                    const videoDisplayHeight = rect.width / videoRatio;
+                    const offsetY = (rect.height - videoDisplayHeight) / 2;
+                    
+                    this.videoDisplayInfo.offsetY = offsetY;
+                    this.videoDisplayInfo.scaleY = videoDisplayHeight / rect.height;
+                }
+            }
+            
+            // Set canvas to match the container
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+            canvas.style.width = `${rect.width}px`;
+            canvas.style.height = `${rect.height}px`;
+            canvas.style.left = `${rect.left}px`;
+            canvas.style.top = `${rect.top}px`;
+            
+            this.log(`Canvas resized to ${rect.width}x${rect.height}, video: ${video.videoWidth}x${video.videoHeight}`, 'info');
+            if (this.videoDisplayInfo.offsetX > 0 || this.videoDisplayInfo.offsetY > 0) {
+                this.log(`Letterboxing detected: offsetX=${this.videoDisplayInfo.offsetX}, offsetY=${this.videoDisplayInfo.offsetY}`, 'info');
+            }
+        }
+    }
+    
+    // Helper to convert canvas coordinates to normalized video coordinates
+    canvasToVideoCoordinates(canvasX, canvasY) {
+        if (!this.videoDisplayInfo) return { x: canvasX, y: canvasY };
+        
+        const info = this.videoDisplayInfo;
+        
+        // Check if click is outside the actual video area
+        if (canvasX < info.offsetX || canvasX > (info.containerWidth - info.offsetX) ||
+            canvasY < info.offsetY || canvasY > (info.containerHeight - info.offsetY)) {
+            // Click is in the letterboxing area, return null or clamp to nearest edge
+            const x = Math.max(info.offsetX, Math.min(info.containerWidth - info.offsetX, canvasX));
+            const y = Math.max(info.offsetY, Math.min(info.containerHeight - info.offsetY, canvasY));
+            
+            // Convert to normalized coordinates (0-1)
+            return {
+                x: (x - info.offsetX) / (info.containerWidth - 2 * info.offsetX),
+                y: (y - info.offsetY) / (info.containerHeight - 2 * info.offsetY)
+            };
+        }
+        
+        // Convert to normalized coordinates (0-1)
+        return {
+            x: (canvasX - info.offsetX) / (info.containerWidth - 2 * info.offsetX),
+            y: (canvasY - info.offsetY) / (info.containerHeight - 2 * info.offsetY)
+        };
+    }
+    
+    throttle(func, delay) {
+        if (!this.throttleTimer) {
+            func();
+            this.throttleTimer = setTimeout(() => {
+                this.throttleTimer = null;
+            }, delay);
+        }
+    }
+    
+    showLoading(show) {
+        const overlay = document.getElementById('loadingOverlay');
+        if (overlay) {
+            if (show) {
+                overlay.classList.remove('hidden');
+            } else {
+                overlay.classList.add('hidden');
+            }
+        }
+    }
+    
+    updateStatus(text, connected) {
+        document.getElementById('statusText').textContent = text;
+        const dot = document.getElementById('statusDot');
+        
+        if (connected) {
+            dot.classList.add('connected');
+        } else {
+            dot.classList.remove('connected');
+        }
+    }
+    
+    showNotification(message, type = 'info') {
+        const container = document.getElementById('notifications');
+        const notification = document.createElement('div');
+        
+        notification.className = `notification ${type}`;
+        notification.innerHTML = `
+            <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+            <span>${message}</span>
+        `;
+        
+        container.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.style.animation = 'slideOut 0.3s ease-in forwards';
+            setTimeout(() => notification.remove(), 300);
+        }, 3000);
+    }
+    
+    log(message, level = 'info') {
+        const timestamp = new Date().toLocaleTimeString();
+        console.log(`[${timestamp}] ${message}`);
+        
+        const debugContent = document.getElementById('debugContent');
+        if (debugContent) {
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${level}`;
+            entry.textContent = `[${timestamp}] ${message}`;
+            debugContent.appendChild(entry);
+            debugContent.scrollTop = debugContent.scrollHeight;
+        }
+    }
+    
+    closePeerConnection() {
+        if (this.connection.pc) {
+            this.connection.pc.close();
+            this.connection.pc = null;
+        }
+        
+        if (this.connection.dataChannel) {
+            this.connection.dataChannel.close();
+            this.connection.dataChannel = null;
+        }
+        
+        if (this.stats.interval) {
+            clearInterval(this.stats.interval);
+            this.stats.interval = null;
+        }
+    }
+    
+    handleError(data) {
+        this.log(`Error: ${data.message}`, 'error');
+        this.showNotification(data.message, 'error');
+        this.showLoading(false);
+    }
+    
+    // Handle host ready
+    handleHostReady(data) {
+        this.log('Host is ready to share', 'info');
+        if (this.state.role === 'client') {
+            this.setupPeerConnection();
+        }
+    }
+    
+    // Handle host available (when client connects to a host)
+    handleHostAvailable(data) {
+        this.log(`Connected to host: ${data.hostId}`, 'info');
+        this.connectedPeerId = data.hostId;
+        this.setupPeerConnection();
+    }
+    
+    // Handle client joined (when a client connects to the host)
+    handleClientJoined(data) {
+        this.log(`Client ${data.clientId} connected`, 'info');
+        this.connectedPeerId = data.clientId;
+        
+        if (this.state.role === 'host' && this.state.streaming) {
+            this.createOffer();
+        }
+    }
+    
+    handleTouchStart(event) {
+        if (!this.state.controlling) return;
+        event.preventDefault();
+        
+        const touch = event.touches[0];
+        const rect = event.target.getBoundingClientRect();
+        const canvasX = touch.clientX - rect.left;
+        const canvasY = touch.clientY - rect.top;
+        
+        // Convert to normalized video coordinates
+        const coords = this.canvasToVideoCoordinates(canvasX, canvasY);
+        
+        this.log(`Touch start at ${coords.x.toFixed(2)}, ${coords.y.toFixed(2)}`, 'info');
+        this.sendControlCommand('mousedown', { x: coords.x, y: coords.y, button: 0 });
+    }
+    
+    handleTouchMove(event) {
+        if (!this.state.controlling) return;
+        event.preventDefault();
+        
+        const touch = event.touches[0];
+        const rect = event.target.getBoundingClientRect();
+        const canvasX = touch.clientX - rect.left;
+        const canvasY = touch.clientY - rect.top;
+        
+        // Convert to normalized video coordinates
+        const coords = this.canvasToVideoCoordinates(canvasX, canvasY);
+        
+        this.throttle(() => {
+            this.sendControlCommand('mousemove', { x: coords.x, y: coords.y });
+        }, 30);
+    }
+    
+    handleTouchEnd(event) {
+        if (!this.state.controlling) return;
+        event.preventDefault();
+        
+        if (event.changedTouches.length > 0) {
+            const touch = event.changedTouches[0];
+            const rect = event.target.getBoundingClientRect();
+            const canvasX = touch.clientX - rect.left;
+            const canvasY = touch.clientY - rect.top;
+            
+            // Convert to normalized video coordinates
+            const coords = this.canvasToVideoCoordinates(canvasX, canvasY);
+            
+            this.sendControlCommand('mouseup', { x: coords.x, y: coords.y, button: 0 });
+        }
+    }
+    
+    // New method for keyboard events
+    handleKeyEvent(event, type) {
+        if (!this.state.controlling) return;
+        
+        // Prevent default browser shortcuts except for some essential ones
+        if (!event.ctrlKey || (event.ctrlKey && !['f', 'r', 't', 'w'].includes(event.key.toLowerCase()))) {
+            event.preventDefault();
+        }
+        
+        const keyData = {
+            key: event.key,
+            code: event.code,
+            keyCode: event.keyCode,
+            ctrlKey: event.ctrlKey,
+            shiftKey: event.shiftKey,
+            altKey: event.altKey,
+            metaKey: event.metaKey
+        };
+        
+        this.log(`Key ${type}: ${event.key} (${event.code})`, 'info');
+        this.sendControlCommand(type, keyData);
+    }
+}
+
+// Panel toggle
+function togglePanel(panelId) {
+    document.getElementById(panelId).classList.toggle('collapsed');
+}
+
+// Debug panel
+function toggleDebugPanel() {
+    document.getElementById('debugPanel').classList.toggle('visible');
+}
+
+function clearDebugLog() {
+    document.getElementById('debugContent').innerHTML = '';
+}
+
+// Initialize app
+const app = new RemoteDesktopApp();
+
+// Add CSS animation for notifications
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideOut {
+        to {
+            transform: translateX(120%);
+            opacity: 0;
+        }
+    }
+`;
+document.head.appendChild(style);
+    </script>
+</body>
+</html>

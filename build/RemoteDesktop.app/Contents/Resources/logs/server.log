@@ -1,0 +1,130 @@
+✅ RobotJS loaded successfully
+
+==========================================
+   Simple Remote Desktop Server
+==========================================
+
+Server running on port 9000
+Local access: http://localhost:9000
+
+Network access:
+  http://10.234.112.201:9000
+
+📋 Instructions:
+1. Open the URL in browser on both computers
+2. Host: Click "Host" then "Start Screen Share"
+3. Client: Click "Client" and wait for connection
+4. Client: Click "Enable Control" to control the host
+
+
+Press Ctrl+C to stop
+
+[Client 1] Connected from 127.0.0.1
+[Client 1] Message: register
+[Client 1] Registered as HOST
+[Client 1] Message: host-ready
+[Host 1] Ready to share
+[Client 1] Message: offer
+[Client 1] Sending offer to null
+[Client 1] Target null not found or not connected
+[Client 1] Message: ice-candidate
+[Client 1] Forwarding ICE candidate
+[Client 1] Message: ice-candidate
+[Client 1] Forwarding ICE candidate
+[Client 1] Message: ice-candidate
+[Client 1] Forwarding ICE candidate
+[Client 1] Message: ice-candidate
+[Client 1] Forwarding ICE candidate
+[Client 2] Connected from 10.234.114.13
+[Client 2] Message: register
+[Client 2] Registered as CLIENT
+[Client 1] Message: offer
+[Client 1] Sending offer to 2
+[Client 2] Message: answer
+[Client 2] Sending answer to 1
+[Client 2] Message: ice-candidate
+[Client 2] Forwarding ICE candidate
+[Client 2] Message: ice-candidate
+[Client 2] Forwarding ICE candidate
+[Client 2] Message: connect-to-host
+[Client 2] Trying to connect to host: 1
+[Client 2] Host found and ready
+[Client 1] Message: offer
+[Client 1] Sending offer to 2
+[Client 2] Message: answer
+[Client 2] Sending answer to 1
+[Client 2] Message: ice-candidate
+[Client 2] Forwarding ICE candidate
+[Client 2] Message: ice-candidate
+[Client 2] Forwarding ICE candidate
+[Client 1] Message: host-stopped
+[Host 1] Stopped sharing
+[Client 2] Disconnected
+[Client 1] Message: host-ready
+[Host 1] Ready to share
+[Client 1] Message: offer
+[Client 1] Sending offer to 2
+[Client 1] Target 2 not found or not connected
+[Client 1] Message: ice-candidate
+[Client 1] Forwarding ICE candidate
+[Client 1] Message: ice-candidate
+[Client 1] Forwarding ICE candidate
+[Client 1] Message: ice-candidate
+[Client 1] Forwarding ICE candidate
+[Client 1] Message: ice-candidate
+[Client 1] Forwarding ICE candidate
+[Client 3] Connected from 10.234.114.13
+[Client 3] Message: register
+[Client 3] Registered as CLIENT
+[Client 1] Message: offer
+[Client 1] Sending offer to 3
+[Client 3] Message: answer
+[Client 3] Sending answer to 1
+[Client 3] Message: ice-candidate
+[Client 3] Forwarding ICE candidate
+[Client 3] Message: ice-candidate
+[Client 3] Forwarding ICE candidate
+[Client 3] Message: connect-to-host
+[Client 3] Trying to connect to host: 1
+[Client 3] Host found and ready
+[Client 1] Message: offer
+[Client 1] Sending offer to 3
+[Client 3] Message: answer
+[Client 3] Sending answer to 1
+[Client 3] Message: ice-candidate
+[Client 3] Forwarding ICE candidate
+[Client 3] Message: ice-candidate
+[Client 3] Forwarding ICE candidate
+[Client 1] Message: host-stopped
+[Host 1] Stopped sharing
+[Client 1] Message: host-ready
+[Host 1] Ready to share
+[Client 1] Message: offer
+[Client 1] Sending offer to 3
+[Client 1] Message: ice-candidate
+[Client 1] Forwarding ICE candidate
+[Client 1] Message: ice-candidate
+[Client 1] Forwarding ICE candidate
+[Client 1] Message: ice-candidate
+[Client 1] Forwarding ICE candidate
+[Client 1] Message: ice-candidate
+[Client 1] Forwarding ICE candidate
+[Client 3] Message: answer
+[Client 3] Sending answer to 1
+[Client 3] Message: ice-candidate
+[Client 3] Forwarding ICE candidate
+[Client 3] Message: ice-candidate
+[Client 3] Forwarding ICE candidate
+[Client 3] Message: connect-to-host
+[Client 3] Trying to connect to host: 1
+[Client 3] Host found and ready
+[Client 1] Message: offer
+[Client 1] Sending offer to 3
+[Client 3] Message: answer
+[Client 3] Sending answer to 1
+[Client 3] Message: ice-candidate
+[Client 3] Forwarding ICE candidate
+[Client 3] Message: ice-candidate
+[Client 3] Forwarding ICE candidate
+[Client 1] Message: host-stopped
+[Host 1] Stopped sharing
